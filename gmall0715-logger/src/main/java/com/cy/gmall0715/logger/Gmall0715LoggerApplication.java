@@ -1,9 +1,10 @@
-package com.cy.gmall0715.gmall0715logger;
+package com.cy.gmall0715.logger;
 
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+//@RunWith(SpringRunner.class)
 @SpringBootApplication
 public class Gmall0715LoggerApplication {
 
