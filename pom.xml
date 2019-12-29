@@ -20,8 +20,7 @@
         <module>gmall0715-mock</module>
         <module>gmall0715-logger</module>
         <module>gmall0715-realtime</module>
-        <module>gmall0715-realtime</module>
-        <module>gmall0715-realtime</module>
+
     </modules>
     <properties>
         <spark.version>2.1.1</spark.version>
