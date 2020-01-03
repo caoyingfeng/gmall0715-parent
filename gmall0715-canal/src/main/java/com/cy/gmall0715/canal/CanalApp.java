@@ -21,7 +21,7 @@ public class CanalApp {
                 "example", "", "");
 
         //todo 2 利用连接器抓取数据
-        while(true){
+        while (true) {
             canalConnector.connect();
             //抓取gmall0715数据库里的所有表
             canalConnector.subscribe("gmall0715.*");
@@ -30,30 +30,30 @@ public class CanalApp {
             // binlog_format=row   row 以sql为单位进行存储相应的数据
             Message message = canalConnector.get(100);
             List<CanalEntry.Entry> entries = message.getEntries();
-            if(entries.size()==0){
+            if (entries.size() == 0) {
                 System.out.println("没有数据，休息5秒");
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }else{
+            } else {
                 //todo 3 抓取数据后，提取数据
                 //一个entry 代表一个sql执行的结果集,
                 for (CanalEntry.Entry entry : entries) {
                     //业务数据 StoreValue
                     //entry中还会包括其他写操作，比如事务开启/关闭语句等,只需要ROWDATA
-                    if(entry.getEntryType()== CanalEntry.EntryType.ROWDATA){
+                    if (entry.getEntryType() == CanalEntry.EntryType.ROWDATA) {
                         //取出序列化后的值集合
                         ByteString storeValue = entry.getStoreValue();
-                        CanalEntry.RowChange rowChange=null;
+                        CanalEntry.RowChange rowChange = null;
+                        //反序列化
                         try {
-                            //反序列化
                             rowChange = CanalEntry.RowChange.parseFrom(storeValue);
                         } catch (InvalidProtocolBufferException e) {
                             e.printStackTrace();
                         }
-                        if(rowChange!=null){
+                        if (rowChange != null) {
                             //得到行数据List
                             List<CanalEntry.RowData> rowDatasList = rowChange.getRowDatasList();
                             //取出表名
@@ -63,15 +63,14 @@ public class CanalApp {
                             CanalHandler canalHandler = new CanalHandler(eventType, tableName, rowDatasList);
                             canalHandler.handle();
                         }
-                    }else{
+
+                    } else {
                         continue;
                     }
 
-
-                    //业务数据
-
                 }
             }
+
         }
     }
 }

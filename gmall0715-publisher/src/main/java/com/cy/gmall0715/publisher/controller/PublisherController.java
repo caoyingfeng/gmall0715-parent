@@ -42,6 +42,14 @@ public class PublisherController {
 
         totalList.add(newMidMap);
 
+        Map orderMap = new HashMap();
+        Double orderAmount = publisherService.getOrderAmount(date);
+        orderMap.put("id","order_amount");
+        orderMap.put("name","新增交易额");
+        orderMap.put("value",orderAmount);
+
+        totalList.add(orderMap);
+
         return JSON.toJSONString(totalList);
     }
 
@@ -53,20 +61,38 @@ public class PublisherController {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("today",dauHoursToday);
 
-            String yesterdayDateString = "";
-            try {
-                Date todayDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-                Date yesterdayDate = DateUtils.addDays(todayDate, -1);
-                yesterdayDateString = new SimpleDateFormat("yyyy-MM-dd").format(yesterdayDate);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            String yesterdayDateString = getYesterday(date);
 
             Map dauHourYesterday = publisherService.getDauHourCount(yesterdayDateString);
             jsonObject.put("yesterday",dauHourYesterday);
             return jsonObject.toJSONString();
-        }else{
+        }else if("order_amount".equals(id)){
+            Map orderHourAmountTd = publisherService.getOrderHourAmount(date);
+
+            String yesterday = getYesterday(date);
+            Map orderHourAmountYD = publisherService.getOrderHourAmount(yesterday);
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("today",orderHourAmountTd);
+            jsonObject.put("yesterday",orderHourAmountYD);
+
+            return jsonObject.toJSONString();
+        }
+        else{
             return null;
         }
+    }
+
+    private String getYesterday(String today){
+        SimpleDateFormat formator = new SimpleDateFormat("yyyy-MM-dd");
+        String yesterday = null;
+        try {
+            Date tdDate = formator.parse(today);
+            Date ydDate = DateUtils.addDays(tdDate, -1);
+            yesterday = formator.format(ydDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return yesterday;
     }
 }

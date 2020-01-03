@@ -24,7 +24,7 @@ public class CanalHandler {
     }
 
     public void handle() {
-        //订单表 根据表明和操作类型不同发送到kafka
+        //订单表 根据表名和操作类型不同发送到kafka
         if ("order_info".equals(tableName) && CanalEntry.EventType.INSERT == eventType && rowDataList.size()>0) {
             sendToKafka(GmallConstant.KAFKA_TOPIC_ORDER);
         }
@@ -42,7 +42,7 @@ public class CanalHandler {
                 jsonObject.put(column.getName(),column.getValue());
             }
             //每行发一次到kafka
-            KafkaSender.send(GmallConstant.KAFKA_TOPIC_ORDER,jsonObject.toJSONString());
+            KafkaSender.send(topic,jsonObject.toJSONString());
         }
     }
 }
