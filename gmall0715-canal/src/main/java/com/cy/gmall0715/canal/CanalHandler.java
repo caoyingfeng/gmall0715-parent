@@ -27,8 +27,12 @@ public class CanalHandler {
         //订单表 根据表名和操作类型不同发送到kafka
         if ("order_info".equals(tableName) && CanalEntry.EventType.INSERT == eventType && rowDataList.size()>0) {
             sendToKafka(GmallConstant.KAFKA_TOPIC_ORDER);
+        }else if("order_detail".equals(tableName) && CanalEntry.EventType.INSERT == eventType && rowDataList.size()>0){   //用户 商品 订单明细
+            sendToKafka(GmallConstant.KAFKA_TOPIC_ORDER_DETAIL);
+        }else if("user_info".equals(tableName) && (CanalEntry.EventType.INSERT == eventType || CanalEntry.EventType.UPDATE == eventType) && rowDataList.size()>0){   //用户 商品 订单明细
+            sendToKafka(GmallConstant.KAFKA_TOPIC_USER);
         }
-    }
+   }
 
     public void sendToKafka(String topic){
         //得到每一行

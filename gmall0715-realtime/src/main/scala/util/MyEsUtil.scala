@@ -1,5 +1,6 @@
 package util
 
+import java.util
 import java.util.Objects
 
 import io.searchbox.client.config.HttpClientConfig
@@ -14,7 +15,7 @@ import org.apache.commons.beanutils.BeanUtils
 object MyEsUtil {
   private val ES_HOST = "http://hadoop102"
   private val ES_HTTP_PORT = 9200
-  private var factory:JestClientFactory = null
+  private var factory:JestClientFactory = null  //工厂类，类似于连接池
 
   /**
     * 获取客户端
@@ -27,19 +28,6 @@ object MyEsUtil {
   }
 
   /**
-    * 关闭客户端
-    */
-  def close(client: JestClient): Unit = {
-    if (!Objects.isNull(client)) try
-      client.shutdownClient()
-      //client.close()
-    catch {
-      case e: Exception =>
-        e.printStackTrace()
-    }
-  }
-
-  /**
     * 建立连接
     */
   private def build(): Unit = {
@@ -47,9 +35,21 @@ object MyEsUtil {
     factory.setHttpClientConfig(new HttpClientConfig.Builder(ES_HOST + ":" + ES_HTTP_PORT).multiThreaded(true)
       .maxTotalConnection(20) //连接总数
       .connTimeout(10000).readTimeout(10000).build)
-
   }
 
+  /**
+    * 关闭客户端
+    */
+  def close(client: JestClient): Unit = {
+    //if (!Objects.isNull(client)) try
+    if(client != null) try
+      client.shutdownClient()
+    //client.close()
+    catch {
+      case e: Exception =>
+        e.printStackTrace()
+    }
+  }
 
   def executeIndexBulk(indexName:String ,list:List[Any], idColumn:String): Unit ={
     //Bulk用来批处理，一批数据默认的index，默认的type
@@ -73,5 +73,32 @@ object MyEsUtil {
     }
     close(jestclient)
   }
+  //批次增加到es
+  def insertEsBulk(indexName:String,sourceList:List[(String,Any)]): Unit ={
+    if(sourceList.size>0) {
+      val jest: JestClient = getClient
+      //Bulk用来批处理
+      val bulkBuilder: Bulk.Builder = new Bulk.Builder
+      for ((id, source) <- sourceList) {
+        val index: Index = new Index.Builder(source).index(indexName).`type`("_doc").id(id).build()
+        bulkBuilder.addAction(index)
+      }
+      //批次提交到es  getItems 得到执行结果
+      val items: util.List[BulkResult#BulkResultItem] = jest.execute(bulkBuilder.build()).getItems
+      println("已保存：" + items.size() + "条数据")
+
+      close(jest)
+    }
+  }
+
+  def main(args: Array[String]): Unit = {
+    val jest: JestClient = getClient
+    val index = new Index.Builder(new Stu0715("101","zhang3")).index("stu_0715").`type`("stu").id("101").build()
+    //Action  中的index相当于add或insert
+    jest.execute(index)
+    jest.close()
+  }
+
+  case class Stu0715(stuId: String, name: String)
 
 }
